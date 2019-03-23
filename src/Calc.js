@@ -122,24 +122,24 @@ class Calc {
 			} else if (token.type === TYPE_ENUM.PAR) {
 				if (token.value in PARENS) {
 					let closingParen = PARENS[token.value];
-					let {tree: right, nextIndex} = Calc.parse(tokens, index + 1, undefined, closingParen);
-					index = nextIndex - 1;
+					let {tree: right, lastIndex} = Calc.parse(tokens, index + 1, undefined, closingParen);
+					index = lastIndex;
 					tree = defaultOp(tree, right);
 				} else if (token.value === closingParen || operatorPriority !== -1)
-					return {tree: tree || 0, nextIndex: index + 1};
+					return {tree: tree || 0, lastIndex: index};
 
 			} else if (token.type === TYPE_ENUM.OPR) {
 				let operator = OPERATORS[token.value];
 				if (operator.priority <= operatorPriority)
-					return {tree, nextIndex: index};
-				let {tree: right = operator.defaultOperand, nextIndex} = Calc.parse(tokens, index + 1, operator.priority);
-				index = nextIndex - 1;
+					return {tree, lastIndex: index - 1};
+				let {tree: right = operator.defaultOperand, lastIndex} = Calc.parse(tokens, index + 1, operator.priority);
+				index = lastIndex;
 				tree = {operator: token.value, left: or(tree, operator.defaultOperand), right};
 			}
 
 			index++;
 		}
-		return {tree, nextIndex: index};
+		return {tree};
 	}
 
 	static printParseTree(tree, indent = 0) {
