@@ -153,7 +153,7 @@ class Calc {
 	static printParseTree(tree, indent = 0) {
 		if (tree === undefined)
 			return;
-		console.log(' '.repeat(indent), tree.operator || tree);
+		console.log('  '.repeat(indent), tree.operator || tree.value);
 		Calc.printParseTree(tree.left, indent + 1);
 		Calc.printParseTree(tree.right, indent + 1);
 	}
