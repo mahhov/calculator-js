@@ -3,6 +3,7 @@ const TYPE_ENUM = {
 	NUM: 'number',
 	PAR: 'paren',
 	OPR: 'operator',
+	SPC: 'special'
 };
 
 // todo
@@ -64,9 +65,12 @@ const OPERATORS = {
 	},
 };
 
-const df = value => value !== undefined;
-const or = (value, orValue) => df(value) ? value : orValue;
-const defaultOp = (left, right) => df(left) ? {operator: '*', left, right} : right;
+const SPECIALS = [
+	'@',
+];
+
+const defaultOp = (left, right) => left ? {operator: '*', left, right} : right;
+const numTok = value => ({type: TYPE_ENUM.NUM, value}); // todo consider creating shorthand for other token types as well
 
 let debugG; // todo remove or find an alternative to this global var
 
@@ -99,11 +103,13 @@ class Calc {
 				if (value[0].match(/[a-zA-Z]/))
 					return {type: TYPE_ENUM.VAR, value};
 				if (value[0].match(/[\d.,]/))
-					return {type: TYPE_ENUM.NUM, value: Calc.parseNumber(value)};
+					return numTok(Calc.parseNumber(value));
 				if (value[0] in PARENS || Object.values(PARENS).includes(value[0]))
 					return {type: TYPE_ENUM.PAR, value};
 				if (value[0] in OPERATORS)
 					return {type: TYPE_ENUM.OPR, value};
+				if (value[0] in SPECIALS)
+					return {type: TYPE_ENUM.SPC, value};
 			}).filter(a => a);
 	}
 
@@ -116,25 +122,27 @@ class Calc {
 
 			let token = tokens[index];
 
-			if (token.type === TYPE_ENUM.NUM) {
-				tree = defaultOp(tree, token.value);
+			if (token.type === TYPE_ENUM.VAR || token.type === TYPE_ENUM.NUM) {
+				tree = defaultOp(tree, token);
 
 			} else if (token.type === TYPE_ENUM.PAR) {
 				if (token.value in PARENS) {
-					let closingParen = PARENS[token.value];
-					let {tree: right, lastIndex} = Calc.parse(tokens, index + 1, undefined, closingParen);
+					let {tree: right, lastIndex} = Calc.parse(tokens, index + 1, undefined, PARENS[token.value]);
 					index = lastIndex;
 					tree = defaultOp(tree, right);
 				} else if (token.value === closingParen || operatorPriority !== -1)
-					return {tree: tree || 0, lastIndex: index};
+					return {tree: tree || numTok(0), lastIndex: index};
 
 			} else if (token.type === TYPE_ENUM.OPR) {
 				let operator = OPERATORS[token.value];
 				if (operator.priority <= operatorPriority)
 					return {tree, lastIndex: index - 1};
-				let {tree: right = operator.defaultOperand, lastIndex} = Calc.parse(tokens, index + 1, operator.priority);
+				let {tree: right = numTok(operator.defaultOperand), lastIndex} = Calc.parse(tokens, index + 1, operator.priority);
 				index = lastIndex;
-				tree = {operator: token.value, left: or(tree, operator.defaultOperand), right};
+				tree = {operator: token.value, left: tree || numTok(operator.defaultOperand), right};
+
+			} else if (token.type === TYPE_ENUM.SPC) {
+
 			}
 
 			index++;
@@ -152,7 +160,7 @@ class Calc {
 
 	// return number
 	static compute(tree) {
-		return tree.operator ? OPERATORS[tree.operator].compute(Calc.compute(tree.left), Calc.compute(tree.right)) : tree;
+		return tree.operator ? OPERATORS[tree.operator].compute(Calc.compute(tree.left), Calc.compute(tree.right)) : tree.value;
 	}
 }
 

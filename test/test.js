@@ -41,3 +41,10 @@ assert(Calc.do('33..22,,11..99,,88'), 33.22119988);
 assert(Calc.do('3,500,10.3,22,.3.51'), 350010.322351);
 assert(Calc.do('.3.4'), 0.34);
 assert(Calc.do(',3.4'), 3.4);
+
+// variables
+// assert(Calc.do('4x @ x=3, y=2'), 12);
+// assert(Calc.do('4x4_10 @ x=3, y=2, x4_10=5'), 20);
+// assert(Calc.do('4xy @ x=3, y=2'), 0);
+// assert(Calc.do('4x @ x:3'), 12);
+// assert(Calc.do('4x*y+z+w+v3 @ x:3; y=9 @ z=2 w :1 v3 50'), 161);
