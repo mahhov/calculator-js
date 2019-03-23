@@ -13,7 +13,7 @@ const TYPE_ENUM = {
 // ` for keyword (e.g. PI, log)
 // # for base 10; 4#3 = 4000
 // @ =
-// () [] {} <> ||
+// ||
 // , ;
 // sqrt, e, log
 
@@ -94,11 +94,11 @@ class Calc {
 	// return [{type, value}, ...]
 	static lex(stringExpression) {
 		return (stringExpression
-			.match(/[a-zA-Z]+|[\d.,]+|[+\-*\/^%@=,;()\[\]{}<>|]/g) || [])
+			.match(/[a-zA-Z]\w*|[\d.,]+|[+\-*\/^%@=,;()\[\]{}<>|]/g) || [])
 			.map(value => {
 				if (value[0].match(/[a-zA-Z]/))
 					return {type: TYPE_ENUM.VAR, value};
-				if (value[0].match(/[\d.]/))
+				if (value[0].match(/[\d.,]/))
 					return {type: TYPE_ENUM.NUM, value: Calc.parseNumber(value)};
 				if (value[0] in PARENS || Object.values(PARENS).includes(value[0]))
 					return {type: TYPE_ENUM.PAR, value};
