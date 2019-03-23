@@ -65,15 +65,22 @@ const OPERATORS = {
 	},
 };
 
+const df = value => value !== undefined;
+const or = (value, orValue) => df(value) ? value : orValue;
+const defaultOp = (left, right) => df(left) ? {operator: '*', left, right} : right;
+
+let debugG; // todo remove or find an alternative to this global var
+
 class Calc {
 	static do(stringExpression, debug) {
+		debugG = debug;
 		debug && console.log('debug on');
 		let tokens = Calc.lex(stringExpression);
 		debug && console.log(tokens);
 		let parseTree = Calc.parse(tokens).tree;
 		debug && Calc.printParseTree(parseTree);
 		let computed = Calc.compute(parseTree);
-		debug && console.log('=', computed)
+		debug && console.log('=', computed);
 		return computed;
 	}
 
@@ -87,7 +94,7 @@ class Calc {
 				if (value[0].match(/[\d.]/))
 					return {type: TYPE_ENUM.NUM, value: parseFloat(value)};
 				if (value[0] in PARENS || Object.values(PARENS).includes(value[0]))
-					return {type: TYPE_ENUM.PAR, value}
+					return {type: TYPE_ENUM.PAR, value};
 				if (value[0] in OPERATORS)
 					return {type: TYPE_ENUM.OPR, value};
 			}).filter(a => a);
@@ -97,30 +104,30 @@ class Calc {
 	static parse(tokens, index = 0, operatorPriority = -1, closingParen) {
 		let tree;
 		while (index < tokens.length) {
+			if (debugG)
+				console.log(index, tree);
+
 			let token = tokens[index];
 
 			if (token.type === TYPE_ENUM.NUM) {
-				tree = tree ? {operator: '*', left: tree, right: token.value} : token.value;
+				tree = defaultOp(tree, token.value);
 
 			} else if (token.type === TYPE_ENUM.PAR) {
 				if (token.value in PARENS) {
 					let closingParen = PARENS[token.value];
 					let {tree: right, nextIndex} = Calc.parse(tokens, index + 1, undefined, closingParen);
 					index = nextIndex - 1;
-					tree = tree ? {operator: '*', left: tree, right} : right
-				} else if (token.value === closingParen) {
+					tree = defaultOp(tree, right);
+				} else if (token.value === closingParen || operatorPriority !== -1)
 					return {tree: tree || 0, nextIndex: index + 1};
-				}
 
 			} else if (token.type === TYPE_ENUM.OPR) {
 				let operator = OPERATORS[token.value];
-				if (operator.priority <= operatorPriority) {
-					tree = tree || {operator: token.value, left: operator.defaultOperand, right: operator.defaultOperand};
+				if (operator.priority <= operatorPriority)
 					return {tree, nextIndex: index};
-				}
 				let {tree: right = operator.defaultOperand, nextIndex} = Calc.parse(tokens, index + 1, operator.priority);
 				index = nextIndex - 1;
-				tree = {operator: token.value, left: tree || operator.defaultOperand, right};
+				tree = {operator: token.value, left: or(tree, operator.defaultOperand), right};
 			}
 
 			index++;
