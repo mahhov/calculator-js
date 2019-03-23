@@ -150,7 +150,7 @@ class Calc {
 		Calc.printParseTree(tree.right, indent + 1);
 	}
 
-	// return int
+	// return number
 	static compute(tree) {
 		return tree.operator ? OPERATORS[tree.operator].compute(Calc.compute(tree.left), Calc.compute(tree.right)) : tree;
 	}
