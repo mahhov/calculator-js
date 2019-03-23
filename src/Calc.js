@@ -7,7 +7,6 @@ const TYPE_ENUM = {
 
 // todo
 // variables, variables that can be defined with other variables
-// ignore commas in numbers
 // $ and _ and $1... to use previous answers
 // \ for root; 3\8 = 2
 // & for invert; 4+2& = 4.5
@@ -84,15 +83,23 @@ class Calc {
 		return computed;
 	}
 
+	static parseNumber(string) {
+		let decimalCount = 0;
+		string = string
+			.replace(/,/g, '')
+			.replace(/\./g, () => decimalCount++ ? '' : '.');
+		return parseFloat(string);
+	}
+
 	// return [{type, value}, ...]
 	static lex(stringExpression) {
 		return (stringExpression
-			.match(/[a-zA-Z]+|[\d.]+|[+\-*\/^%@=,;()\[\]{}<>|]/g) || [])
+			.match(/[a-zA-Z]+|[\d.,]+|[+\-*\/^%@=,;()\[\]{}<>|]/g) || [])
 			.map(value => {
 				if (value[0].match(/[a-zA-Z]/))
 					return {type: TYPE_ENUM.VAR, value};
 				if (value[0].match(/[\d.]/))
-					return {type: TYPE_ENUM.NUM, value: parseFloat(value)};
+					return {type: TYPE_ENUM.NUM, value: Calc.parseNumber(value)};
 				if (value[0] in PARENS || Object.values(PARENS).includes(value[0]))
 					return {type: TYPE_ENUM.PAR, value};
 				if (value[0] in OPERATORS)
