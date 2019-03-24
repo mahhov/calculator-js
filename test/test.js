@@ -36,6 +36,7 @@ assert(Calc.do(')4 + 2) (3 + 1'), 24);
 assert(Calc.do('()4 + 2) (3 + 1'), 8);
 assert(Calc.do('(2+)3'), 6);
 assert(Calc.do('2+3)*4'), 20);
+assert(Calc.do(' 3(', 0), 0);
 
 // number parsing
 assert(Calc.do('33.22.11.99'), 33.221199);
@@ -61,3 +62,14 @@ assert(Calc.do('4x*y+z+w+v3 @ x=3; y=9 @ z=2 ;w =1 ;v3 = 50'), 161);
 // (re)define variables with variables
 assert(Calc.do('4x + 5y @ x=3; y=2x'), 42);
 assert(Calc.do('y @ x=3; y=2x ;y=y/3'), 2);
+
+// variables and unbalanced parens & operators
+assert(Calc.do(' (3; 5'), 5);
+assert(Calc.do(' )3; 5'), 5);
+assert(Calc.do(' 3; 5)'), 5);
+assert(Calc.do(' 3(; 5'), 5);
+assert(Calc.do(' 3); 5'), 5);
+assert(Calc.do(' 3; )5'), 5);
+assert(Calc.do(' 3; (5'), 5);
+assert(Calc.do(' 3; 5)'), 5);
+assert(Calc.do(' 3; 5('), 0);

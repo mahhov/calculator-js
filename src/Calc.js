@@ -7,15 +7,12 @@ const TYPE_ENUM = {
 };
 
 // todo
-// variables, variables that can be defined with other variables
 // $ and _ and $1... to use previous answers
 // \ for root; 3\8 = 2
 // & for invert; 4+2& = 4.5
 // ` for keyword (e.g. PI, log)
 // # for base 10; 4#3 = 4000
-// @ =
 // ||
-// , ;
 // sqrt, e, log
 
 const PARENS = {
@@ -143,7 +140,7 @@ class Calc {
 
 			} else if (token.type === TYPE_ENUM.PAR) {
 				if (token.value in PARENS) {
-					let {tree: right, lastIndex} = Calc.parse(tokens, index + 1, undefined, PARENS[token.value]);
+					let {tree: right = numTok(0), lastIndex} = Calc.parse(tokens, index + 1, undefined, PARENS[token.value]);
 					index = lastIndex;
 					tree = defaultOp(tree, right);
 				} else if (token.value === closingParen || operatorPriority !== -1)
@@ -158,7 +155,7 @@ class Calc {
 				tree = {operator: token.value, left: tree || numTok(operator.defaultOperand), right};
 
 			} else if (token.type === TYPE_ENUM.DLM) {
-				if (operatorPriority !== -1)
+				if (operatorPriority !== -1 || closingParen)
 					return {tree, lastIndex: index - 1};
 				let {tree: right = numTok(0), lastIndex} = Calc.parse(tokens, index + 1);
 				index = lastIndex;
