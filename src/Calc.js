@@ -58,6 +58,12 @@ const OPERATORS = {
 		defaultOperand: 1,
 		compute: (l, r, lookup) => Calc.compute(l, lookup) / Calc.compute(r, lookup),
 	},
+	'\\': {
+		priority: 2,
+		type: 'binary',
+		defaultOperand: 1,
+		compute: (l, r, lookup) => Calc.compute(r, lookup) / Calc.compute(l, lookup),
+	},
 	'%': {
 		priority: 2,
 		type: 'binary',
@@ -69,6 +75,12 @@ const OPERATORS = {
 		type: 'binary',
 		defaultOperand: 2,
 		compute: (l, r, lookup) => Calc.compute(l, lookup) ** Calc.compute(r, lookup),
+	},
+	'#': {
+		priority: 3,
+		type: 'binary',
+		defaultOperand: 1,
+		compute: (l, r, lookup) => Calc.compute(l, lookup) * 10 ** Calc.compute(r, lookup),
 	},
 };
 
@@ -118,7 +130,7 @@ class Calc {
 	// return [{type, value}, ...]
 	static lex(stringExpression) {
 		return (stringExpression
-			.match(/_|\$\d*|[a-zA-Z]\w*|[\d.,]+|[+\-*\/^%@=;()\[\]{}<>]/g) || [])
+			.match(/_|\$\d*|[a-zA-Z]\w*|[\d.,]+|[+\-*\/^%@=#\\;()\[\]{}<>]/g) || []) // todo order
 			.map(value => {
 				if (value[0].match(/[_$a-zA-Z]/))
 					return {type: TYPE_ENUM.VAR, value};

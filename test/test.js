@@ -83,3 +83,15 @@ assert(Calc.do('3_2', [5, 1, 2, 3, 4]), 30);
 assert(Calc.do('x_32 = 4; 3x_32', [5, 1, 2, 3, 4]), 12);
 assert(Calc.do('x=2; x_1=10; x_1', [5, 1, 2, 3, 4]), 10);
 assert(Calc.do('x=2; x$1', [5, 1, 2, 3, 4]), 10);
+
+// exponent operator (#)
+assert(Calc.do('3#4'), 30000);
+assert(Calc.do('#4'), 10000);
+assert(Calc.do('4#'), 40);
+assert(Calc.do('1+2#3'), 2001);
+assert(Calc.do('2#(3)'), 2000);
+
+// reciprocal operator (\)
+assert(Calc.do('2\\'), 0.5);
+assert(Calc.do('2\\3'), 1.5);
+assert(Calc.do('\\3'), 3);
