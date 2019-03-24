@@ -1,0 +1,23 @@
+{
+  "name": "calc",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "node test/test.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "directories": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mahhov/calculator-js.git"
+  },
+  "bugs": {
+    "url": "https://github.com/mahhov/calculator-js/issues"
+  },
+  "homepage": "https://github.com/mahhov/calculator-js#readme",
+  "description": ""
+}
