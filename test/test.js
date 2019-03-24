@@ -34,6 +34,8 @@ assert(Calc.do('(4 (2 + 3)'), 20);
 assert(Calc.do('4 + 2 3 + 1'), 11);
 assert(Calc.do(')4 + 2) (3 + 1'), 24);
 assert(Calc.do('()4 + 2) (3 + 1'), 8);
+assert(Calc.do('(2+)3'), 6);
+assert(Calc.do('2+3)*4'), 20);
 
 // number parsing
 assert(Calc.do('33.22.11.99'), 33.221199);
@@ -43,8 +45,15 @@ assert(Calc.do('.3.4'), 0.34);
 assert(Calc.do(',3.4'), 3.4);
 
 // variables
-// assert(Calc.do('4x @ x=3, y=2'), 12);
-// assert(Calc.do('4x4_10 @ x=3, y=2, x4_10=5'), 20);
-// assert(Calc.do('4xy @ x=3, y=2'), 0);
-// assert(Calc.do('4x @ x:3'), 12);
-// assert(Calc.do('4x*y+z+w+v3 @ x:3; y=9 @ z=2 w :1 v3 50'), 161);
+assert(Calc.do('x=3 ; x'), 3); // (x = 3) ; x
+assert(Calc.do('x=3; y=2; 4x+y'), 14); // (x = 3) ; ((y = 2) ; (4 * x) + y)
+assert(Calc.do('4x+y @ x=3; y=2'), 14);
+assert(Calc.do('4x @ x=3; y=2'), 12);
+assert(Calc.do('4x4_10 @ x=3; y=2; x4_10=5'), 20);
+assert(Calc.do('4xy @ x=3; y=2'), 0);
+assert(Calc.do('4x @ x=3'), 12);
+assert(Calc.do('4x*y+z+w+v3 @ x=3; y=9 @ z=2 ;w =1 ;v3 = 50'), 161);
+
+// (re)define variables with variables
+assert(Calc.do('4x + 5y @ x=3; y=2x'), 42);
+assert(Calc.do('y @ x=3; y=2x ;y=y/3'), 2);

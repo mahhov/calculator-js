@@ -3,7 +3,7 @@ const TYPE_ENUM = {
 	NUM: 'number',
 	PAR: 'paren',
 	OPR: 'operator',
-	SPC: 'special'
+	DLM: 'delimiter'
 };
 
 // todo
@@ -27,62 +27,81 @@ const PARENS = {
 };
 
 const OPERATORS = {
-	'+': {
+	'=': {
 		priority: 0,
 		type: 'binary',
 		defaultOperand: 0,
-		compute: (l, r) => l + r,
+		compute: (l, r, lookup) => {
+			let value = Calc.compute(r, lookup);
+			if (l.type === TYPE_ENUM.VAR)
+				lookup[l.value] = value;
+			return value;
+		},
+	},
+	'+': {
+		priority: 1,
+		type: 'binary',
+		defaultOperand: 0,
+		compute: (l, r, lookup) => Calc.compute(l, lookup) + Calc.compute(r, lookup),
 	},
 	'-': {
-		priority: 0,
+		priority: 1,
 		type: 'binary',
 		defaultOperand: 0,
-		compute: (l, r) => l - r,
+		compute: (l, r, lookup) => Calc.compute(l, lookup) - Calc.compute(r, lookup),
 	},
 	'*': {
-		priority: 1,
-		type: 'binary',
-		defaultOperand: 1,
-		compute: (l, r) => l * r,
-	},
-	'/': {
-		priority: 1,
-		type: 'binary',
-		defaultOperand: 1,
-		compute: (l, r) => l / r,
-	},
-	'%': {
-		priority: 1,
-		type: 'binary',
-		defaultOperand: 1,
-		compute: (l, r) => l % r,
-	},
-	'^': {
 		priority: 2,
 		type: 'binary',
+		defaultOperand: 1,
+		compute: (l, r, lookup) => Calc.compute(l, lookup) * Calc.compute(r, lookup),
+	},
+	'/': {
+		priority: 2,
+		type: 'binary',
+		defaultOperand: 1,
+		compute: (l, r, lookup) => Calc.compute(l, lookup) / Calc.compute(r, lookup),
+	},
+	'%': {
+		priority: 2,
+		type: 'binary',
+		defaultOperand: 1,
+		compute: (l, r, lookup) => Calc.compute(l, lookup) % Calc.compute(r, lookup),
+	},
+	'^': {
+		priority: 3,
+		type: 'binary',
 		defaultOperand: 2,
-		compute: (l, r) => l ** r,
+		compute: (l, r, lookup) => Calc.compute(l, lookup) ** Calc.compute(r, lookup),
 	},
 };
 
-const SPECIALS = [
-	'@',
-];
+const DELIMS = {
+	'@': {
+		compute: (l, r, lookup) => {
+			Calc.compute(r, lookup);
+			return Calc.compute(l, lookup);
+		},
+	},
+	';': {
+		compute: (l, r, lookup) => {
+			Calc.compute(l, lookup);
+			return Calc.compute(r, lookup);
+		},
+	},
+};
 
 const defaultOp = (left, right) => left ? {operator: '*', left, right} : right;
 const numTok = value => ({type: TYPE_ENUM.NUM, value}); // todo consider creating shorthand for other token types as well
 
-let debugG; // todo remove or find an alternative to this global var
-
 class Calc {
 	static do(stringExpression, debug) {
-		debugG = debug;
 		debug && console.log('debug on');
 		let tokens = Calc.lex(stringExpression);
-		debug && console.log(tokens);
-		let parseTree = Calc.parse(tokens).tree;
-		debug && Calc.printParseTree(parseTree);
-		let computed = Calc.compute(parseTree);
+		debug && console.log('TOKENS:', tokens);
+		let {tree} = Calc.parse(tokens);
+		debug && Calc.printParseTree(tree);
+		let computed = Calc.compute(tree);
 		debug && console.log('=', computed);
 		return computed;
 	}
@@ -98,7 +117,7 @@ class Calc {
 	// return [{type, value}, ...]
 	static lex(stringExpression) {
 		return (stringExpression
-			.match(/[a-zA-Z]\w*|[\d.,]+|[+\-*\/^%@=,;()\[\]{}<>|]/g) || [])
+			.match(/[a-zA-Z]\w*|[\d.,]+|[+\-*\/^%@=;()\[\]{}<>]/g) || [])
 			.map(value => {
 				if (value[0].match(/[a-zA-Z]/))
 					return {type: TYPE_ENUM.VAR, value};
@@ -108,8 +127,8 @@ class Calc {
 					return {type: TYPE_ENUM.PAR, value};
 				if (value[0] in OPERATORS)
 					return {type: TYPE_ENUM.OPR, value};
-				if (value[0] in SPECIALS)
-					return {type: TYPE_ENUM.SPC, value};
+				if (value[0] in DELIMS)
+					return {type: TYPE_ENUM.DLM, value};
 			}).filter(a => a);
 	}
 
@@ -117,9 +136,6 @@ class Calc {
 	static parse(tokens, index = 0, operatorPriority = -1, closingParen) {
 		let tree;
 		while (index < tokens.length) {
-			if (debugG)
-				console.log(index, tree);
-
 			let token = tokens[index];
 
 			if (token.type === TYPE_ENUM.VAR || token.type === TYPE_ENUM.NUM) {
@@ -141,8 +157,12 @@ class Calc {
 				index = lastIndex;
 				tree = {operator: token.value, left: tree || numTok(operator.defaultOperand), right};
 
-			} else if (token.type === TYPE_ENUM.SPC) {
-
+			} else if (token.type === TYPE_ENUM.DLM) {
+				if (operatorPriority !== -1)
+					return {tree, lastIndex: index - 1};
+				let {tree: right, lastIndex} = Calc.parse(tokens, index + 1);
+				index = lastIndex;
+				tree = {delimiter: token.value, left: tree, right};
 			}
 
 			index++;
@@ -153,14 +173,21 @@ class Calc {
 	static printParseTree(tree, indent = 0) {
 		if (tree === undefined)
 			return;
-		console.log('  '.repeat(indent), tree.operator || tree.value);
+		console.log('  '.repeat(indent), tree.operator || tree.delimiter || tree.value);
 		Calc.printParseTree(tree.left, indent + 1);
 		Calc.printParseTree(tree.right, indent + 1);
 	}
 
 	// return number
-	static compute(tree) {
-		return tree.operator ? OPERATORS[tree.operator].compute(Calc.compute(tree.left), Calc.compute(tree.right)) : tree.value;
+	static compute(tree, lookup = {}) {
+		if (tree.type === TYPE_ENUM.VAR)
+			return lookup[tree.value] || 0;
+		if (tree.type === TYPE_ENUM.NUM)
+			return tree.value;
+		if (tree.operator)
+			return OPERATORS[tree.operator].compute(tree.left, tree.right, lookup);
+		if (tree.delimiter)
+			return DELIMS[tree.delimiter].compute(tree.left, tree.right, lookup);
 	}
 }
 
