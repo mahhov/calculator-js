@@ -160,9 +160,9 @@ class Calc {
 			} else if (token.type === TYPE_ENUM.DLM) {
 				if (operatorPriority !== -1)
 					return {tree, lastIndex: index - 1};
-				let {tree: right, lastIndex} = Calc.parse(tokens, index + 1);
+				let {tree: right = numTok(0), lastIndex} = Calc.parse(tokens, index + 1);
 				index = lastIndex;
-				tree = {delimiter: token.value, left: tree, right};
+				tree = {delimiter: token.value, left: tree || numTok(0), right};
 			}
 
 			index++;

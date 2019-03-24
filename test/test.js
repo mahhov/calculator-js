@@ -46,6 +46,10 @@ assert(Calc.do(',3.4'), 3.4);
 
 // variables
 assert(Calc.do('x=3 ; x'), 3); // (x = 3) ; x
+assert(Calc.do('x=3 ; x; 2x'), 6);
+assert(Calc.do('x=3 ; ; 2x'), 6);
+assert(Calc.do('x=3 ; 2x;'), 0);
+assert(Calc.do('x=3;;x;;'), 0);
 assert(Calc.do('x=3; y=2; 4x+y'), 14); // (x = 3) ; ((y = 2) ; (4 * x) + y)
 assert(Calc.do('4x+y @ x=3; y=2'), 14);
 assert(Calc.do('4x @ x=3; y=2'), 12);
