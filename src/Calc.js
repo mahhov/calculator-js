@@ -7,7 +7,6 @@ const TYPE_ENUM = {
 };
 
 // todo
-// $ and _ and $1... to use previous answers
 // \ for root; 3\8 = 2
 // & for invert; 4+2& = 4.5
 // ` for keyword (e.g. PI, log)
@@ -92,14 +91,19 @@ const defaultOp = (left, right) => left ? {operator: '*', left, right} : right;
 const numTok = value => ({type: TYPE_ENUM.NUM, value}); // todo consider creating shorthand for other token types as well
 
 class Calc {
-	static do(stringExpression, debug) {
-		debug && console.log('debug on');
+	static do(stringExpression, prevResults = [], debug) {
 		let tokens = Calc.lex(stringExpression);
-		debug && console.log('TOKENS:', tokens);
 		let {tree} = Calc.parse(tokens);
-		debug && Calc.printParseTree(tree);
-		let computed = Calc.compute(tree);
-		debug && console.log('=', computed);
+		let lookup = Calc.createLookupFromPrevResults(prevResults);
+		let computed = Calc.compute(tree, lookup);
+
+		if (debug) {
+			console.log('debug on');
+			console.log('TOKENS:', tokens);
+			Calc.printParseTree(tree);
+			console.log('=', computed);
+		}
+
 		return computed;
 	}
 
@@ -114,9 +118,9 @@ class Calc {
 	// return [{type, value}, ...]
 	static lex(stringExpression) {
 		return (stringExpression
-			.match(/[a-zA-Z]\w*|[\d.,]+|[+\-*\/^%@=;()\[\]{}<>]/g) || [])
+			.match(/_|\$\d*|[a-zA-Z]\w*|[\d.,]+|[+\-*\/^%@=;()\[\]{}<>]/g) || [])
 			.map(value => {
-				if (value[0].match(/[a-zA-Z]/))
+				if (value[0].match(/[_$a-zA-Z]/))
 					return {type: TYPE_ENUM.VAR, value};
 				if (value[0].match(/[\d.,]/))
 					return numTok(Calc.parseNumber(value));
@@ -175,8 +179,16 @@ class Calc {
 		Calc.printParseTree(tree.right, indent + 1);
 	}
 
+	// return {varName: varValue, ...}
+	static createLookupFromPrevResults(prevResults) {
+		let lookup = {};
+		lookup._ = lookup.$ = prevResults[0];
+		prevResults.forEach((result, i) => lookup['$' + (i + 1)] = result);
+		return lookup;
+	}
+
 	// return number
-	static compute(tree, lookup = {}) {
+	static compute(tree, lookup) {
 		if (tree.type === TYPE_ENUM.VAR)
 			return lookup[tree.value] || 0;
 		if (tree.type === TYPE_ENUM.NUM)

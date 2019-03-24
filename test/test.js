@@ -36,7 +36,7 @@ assert(Calc.do(')4 + 2) (3 + 1'), 24);
 assert(Calc.do('()4 + 2) (3 + 1'), 8);
 assert(Calc.do('(2+)3'), 6);
 assert(Calc.do('2+3)*4'), 20);
-assert(Calc.do(' 3(', 0), 0);
+assert(Calc.do(' 3('), 0);
 
 // number parsing
 assert(Calc.do('33.22.11.99'), 33.221199);
@@ -73,3 +73,13 @@ assert(Calc.do(' 3; )5'), 5);
 assert(Calc.do(' 3; (5'), 5);
 assert(Calc.do(' 3; 5)'), 5);
 assert(Calc.do(' 3; 5('), 0);
+
+// previous results ($ and _)
+assert(Calc.do('_ + $', [5]), 10);
+assert(Calc.do('$ + $0 + $3', [5, 1, 2, 3, 4]), 7);
+assert(Calc.do('x=10; $3x', [5, 1, 2, 3, 4]), 20);
+assert(Calc.do('x3=10; $x3', [5, 1, 2, 3, 4]), 50);
+assert(Calc.do('3_2', [5, 1, 2, 3, 4]), 30);
+assert(Calc.do('x_32 = 4; 3x_32', [5, 1, 2, 3, 4]), 12);
+assert(Calc.do('x=2; x_1=10; x_1', [5, 1, 2, 3, 4]), 10);
+assert(Calc.do('x=2; x$1', [5, 1, 2, 3, 4]), 10);
