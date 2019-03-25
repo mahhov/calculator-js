@@ -11,7 +11,6 @@ const TYPE_ENUM = {
 // ||
 // 3 * -1 should be -3 and not 2
 // ' and " in var names
-// test overriding $ and _
 
 const PARENS = {
 	'(': ')',

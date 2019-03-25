@@ -84,6 +84,7 @@ assert(Calc.do('3_2', [5, 1, 2, 3, 4]), 30);
 assert(Calc.do('x_32 = 4; 3x_32', [5, 1, 2, 3, 4]), 12);
 assert(Calc.do('x=2; x_1=10; x_1', [5, 1, 2, 3, 4]), 10);
 assert(Calc.do('x=2; x$1', [5, 1, 2, 3, 4]), 10);
+assert(Calc.do('_=2; $=3; $1=4; $2=5; _+$+$1+$2', [10, 10, 10]), 14);
 
 // exponent operator (#)
 assert(Calc.do('3#4'), 30000);
@@ -104,3 +105,4 @@ assert(Calc.do('3`e+'), 3 * Math.E);
 assert(Calc.do('3`3+'), 9);
 assert(Calc.do('3`xyz+'), 0);
 assert(Calc.do('3`(PI+3)'), 9);
+assert(Calc.do('`_ + `$ + `$1', [10]), 0);
