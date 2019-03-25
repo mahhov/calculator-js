@@ -2,17 +2,16 @@ const TYPE_ENUM = {
 	VAR: 'variable',
 	NUM: 'number',
 	PAR: 'paren',
+	POP: 'pre_operator',
 	OPR: 'operator',
 	DLM: 'delimiter'
 };
 
 // todo
-// \ for root; 3\8 = 2
-// & for invert; 4+2& = 4.5
-// ` for keyword (e.g. PI, log)
-// # for base 10; 4#3 = 4000
 // ||
-// sqrt, e, log
+// 3 * -1 should be -3 and not 2
+// ' and " in var names
+// test overriding $ and _
 
 const PARENS = {
 	'(': ')',
@@ -22,10 +21,23 @@ const PARENS = {
 	'|': '|',
 };
 
+const PRE_OPERATORS = {
+	'`': {
+		defaultOperand: 0,
+		compute: (r, lookup) => {
+			if (r.type !== TYPE_ENUM.VAR)
+				return Calc.compute(r, lookup);
+			return {
+				'pi': Math.PI,
+				'e': Math.E
+			}[r.value.toLowerCase()] || 0;
+		},
+	},
+};
+
 const OPERATORS = {
 	'=': {
 		priority: 0,
-		type: 'binary',
 		defaultOperand: 0,
 		compute: (l, r, lookup) => {
 			let value = Calc.compute(r, lookup);
@@ -36,49 +48,41 @@ const OPERATORS = {
 	},
 	'+': {
 		priority: 1,
-		type: 'binary',
 		defaultOperand: 0,
 		compute: (l, r, lookup) => Calc.compute(l, lookup) + Calc.compute(r, lookup),
 	},
 	'-': {
 		priority: 1,
-		type: 'binary',
 		defaultOperand: 0,
 		compute: (l, r, lookup) => Calc.compute(l, lookup) - Calc.compute(r, lookup),
 	},
 	'*': {
 		priority: 2,
-		type: 'binary',
 		defaultOperand: 1,
 		compute: (l, r, lookup) => Calc.compute(l, lookup) * Calc.compute(r, lookup),
 	},
 	'/': {
 		priority: 2,
-		type: 'binary',
 		defaultOperand: 1,
 		compute: (l, r, lookup) => Calc.compute(l, lookup) / Calc.compute(r, lookup),
 	},
 	'\\': {
 		priority: 2,
-		type: 'binary',
 		defaultOperand: 1,
 		compute: (l, r, lookup) => Calc.compute(r, lookup) / Calc.compute(l, lookup),
 	},
 	'%': {
 		priority: 2,
-		type: 'binary',
 		defaultOperand: 1,
 		compute: (l, r, lookup) => Calc.compute(l, lookup) % Calc.compute(r, lookup),
 	},
 	'^': {
 		priority: 3,
-		type: 'binary',
 		defaultOperand: 2,
 		compute: (l, r, lookup) => Calc.compute(l, lookup) ** Calc.compute(r, lookup),
 	},
 	'#': {
 		priority: 3,
-		type: 'binary',
 		defaultOperand: 1,
 		compute: (l, r, lookup) => Calc.compute(l, lookup) * 10 ** Calc.compute(r, lookup),
 	},
@@ -130,7 +134,7 @@ class Calc {
 	// return [{type, value}, ...]
 	static lex(stringExpression) {
 		return (stringExpression
-			.match(/_|\$\d*|[a-zA-Z]\w*|[\d.,]+|[+\-*\/^%@=#\\;()\[\]{}<>]/g) || []) // todo order
+			.match(/_|\$\d*|[a-zA-Z]\w*|[\d.,]+|[+\-*\/^%@=#\\;`()\[\]{}<>]/g) || []) // todo order
 			.map(value => {
 				if (value[0].match(/[_$a-zA-Z]/))
 					return {type: TYPE_ENUM.VAR, value};
@@ -138,6 +142,8 @@ class Calc {
 					return numTok(Calc.parseNumber(value));
 				if (value[0] in PARENS || Object.values(PARENS).includes(value[0]))
 					return {type: TYPE_ENUM.PAR, value};
+				if (value[0] in PRE_OPERATORS)
+					return {type: TYPE_ENUM.POP, value};
 				if (value[0] in OPERATORS)
 					return {type: TYPE_ENUM.OPR, value};
 				if (value[0] in DELIMS)
@@ -151,16 +157,22 @@ class Calc {
 		while (index < tokens.length) {
 			let token = tokens[index];
 
-			if (token.type === TYPE_ENUM.VAR || token.type === TYPE_ENUM.NUM) {
+			if (token.type === TYPE_ENUM.VAR || token.type === TYPE_ENUM.NUM)
 				tree = defaultOp(tree, token);
 
-			} else if (token.type === TYPE_ENUM.PAR) {
+			else if (token.type === TYPE_ENUM.PAR) {
 				if (token.value in PARENS) {
 					let {tree: right = numTok(0), lastIndex} = Calc.parse(tokens, index + 1, undefined, PARENS[token.value]);
 					index = lastIndex;
 					tree = defaultOp(tree, right);
 				} else if (token.value === closingParen || operatorPriority !== -1)
 					return {tree: tree || numTok(0), lastIndex: index};
+
+			} else if (token.type === TYPE_ENUM.POP) {
+				let operator = PRE_OPERATORS[token.value];
+				let {tree: right = numTok(operator.defaultOperand), lastIndex} = Calc.parse(tokens, index + 1, Infinity);
+				index = lastIndex;
+				tree = defaultOp(tree, {preOperator: token.value, value: right});
 
 			} else if (token.type === TYPE_ENUM.OPR) {
 				let operator = OPERATORS[token.value];
@@ -205,6 +217,8 @@ class Calc {
 			return lookup[tree.value] || 0;
 		if (tree.type === TYPE_ENUM.NUM)
 			return tree.value;
+		if (tree.preOperator)
+			return PRE_OPERATORS[tree.preOperator].compute(tree.value, lookup);
 		if (tree.operator)
 			return OPERATORS[tree.operator].compute(tree.left, tree.right, lookup);
 		if (tree.delimiter)

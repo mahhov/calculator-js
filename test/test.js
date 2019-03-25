@@ -19,6 +19,7 @@ assert(Calc.do('3*0 + 4'), 4);
 assert(Calc.do('3 * + 4'), 7); // (3 * (0 + 0)) + 4
 assert(Calc.do('3*0 * 4'), 0);
 assert(Calc.do('3 * * 4'), 12); // (3 * (1 * 1)) * 4
+// assert(Calc.do('3 * -2'), -6); // todo
 
 // balanced parens
 assert(Calc.do('3(4+1)'), 15);
@@ -95,3 +96,11 @@ assert(Calc.do('2#(3)'), 2000);
 assert(Calc.do('2\\'), 0.5);
 assert(Calc.do('2\\3'), 1.5);
 assert(Calc.do('\\3'), 3);
+
+// constants (`)
+assert(Calc.do('2 + `PI + 1'), 3 + Math.PI);
+assert(Calc.do('`PI + `pI + pi'), 2 * Math.PI);
+assert(Calc.do('3`e+'), 3 * Math.E);
+assert(Calc.do('3`3+'), 9);
+assert(Calc.do('3`xyz+'), 0);
+assert(Calc.do('3`(PI+3)'), 9);
