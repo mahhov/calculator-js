@@ -172,7 +172,7 @@ class Calc {
 	// return {operator, left, right}
 	static parse(tokens, index = 0, operatorPriority = -1, closingParen) {
 		let tree;
-		while (index < tokens.length) { // todo replace with for loop?
+		for (; index < tokens.length; index++) {
 			let token = tokens[index];
 
 			if (token.type === TYPE_ENUM.VAR || token.type === TYPE_ENUM.NUM)
@@ -212,9 +212,8 @@ class Calc {
 				index = lastIndex;
 				tree = {delimiter: token.value, left: tree || numTok(0), right};
 			}
-
-			index++;
 		}
+
 		return {tree, lastIndex: tokens.length - 1};
 	}
 
