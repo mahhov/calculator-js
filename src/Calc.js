@@ -114,7 +114,10 @@ class Calc {
 
 		if (debug) {
 			console.log('debug on');
+			console.log('INPUT:', stringExpression);
 			console.log('TOKENS:', tokens);
+			let treeDebug = Calc.flatStringTree(tree);
+			console.log('TREE:', treeDebug);
 			Calc.printParseTree(tree);
 			console.log('=', computed);
 		}
@@ -194,12 +197,30 @@ class Calc {
 		return {tree};
 	}
 
+	static flatStringTree(tree) {
+		if (tree === undefined)
+			return;
+		let headText = tree.paren || tree.preOperator || tree.operator || tree.delimiter;
+
+		if (!headText)
+			return tree.value;
+		else if (tree.left && tree.right)
+			return `(${Calc.flatStringTree(tree.left)}) ${headText} (${Calc.flatStringTree(tree.right)})`;
+		else if (tree.value)
+			return `${headText} (${Calc.flatStringTree(tree.value)})`;
+	}
+
 	static printParseTree(tree, indent = 0) {
 		if (tree === undefined)
 			return;
-		console.log('  '.repeat(indent), tree.operator || tree.delimiter || tree.value);
-		Calc.printParseTree(tree.left, indent + 1);
-		Calc.printParseTree(tree.right, indent + 1);
+		let headText = tree.paren || tree.preOperator || tree.operator || tree.delimiter;
+		console.log('  '.repeat(indent), headText || tree.value);
+		if (headText)
+			Calc.printParseTree(tree.value, indent + 1);
+		if (tree.left)
+			Calc.printParseTree(tree.left, indent + 1);
+		if (tree.right)
+			Calc.printParseTree(tree.right, indent + 1);
 	}
 
 	// return {varName: varValue, ...}
