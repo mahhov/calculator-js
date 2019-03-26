@@ -23,13 +23,13 @@ const PARENS = {
 const PRE_OPERATORS = {
 	'`': {
 		defaultOperand: 0,
-		compute: (r, lookup) => {
-			if (r.type !== TYPE_ENUM.VAR)
-				return Calc.compute(r, lookup);
+		compute: (v, lookup) => {
+			if (v.type !== TYPE_ENUM.VAR)
+				return Calc.compute(v, lookup);
 			return {
 				'pi': Math.PI,
 				'e': Math.E
-			}[r.value.toLowerCase()] || 0;
+			}[v.value.toLowerCase()] || 0;
 		},
 	},
 };
