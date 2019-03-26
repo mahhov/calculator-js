@@ -48,6 +48,12 @@ const PRE_OPERATORS = {
 			}[v.value.toLowerCase()] || 0;
 		},
 	},
+	'-': {
+		defaultOperand: 0,
+		compute: (v, lookup) => {
+			return -Calc.compute(v, lookup);
+		},
+	}
 };
 
 const OPERATORS = {
@@ -65,11 +71,6 @@ const OPERATORS = {
 		priority: 1,
 		defaultOperand: 0,
 		compute: (l, r, lookup) => Calc.compute(l, lookup) + Calc.compute(r, lookup),
-	},
-	'-': {
-		priority: 1,
-		defaultOperand: 0,
-		compute: (l, r, lookup) => Calc.compute(l, lookup) - Calc.compute(r, lookup),
 	},
 	'*': {
 		priority: 2,
@@ -118,8 +119,14 @@ const DELIMS = {
 	},
 };
 
-const defaultOp = (left, right) => left ? {operator: '*', left, right} : right;
-const numTok = value => ({type: TYPE_ENUM.NUM, value}); // todo consider creating shorthand for other token types as well
+const defaultOp = (left, right) => {
+	if (!left)
+		return right;
+	let operator = right.preOperator === '-' ? '+' : '*';
+	return {operator, left, right};
+};
+
+const numTok = value => ({type: TYPE_ENUM.NUM, value});
 
 class Calc {
 	static do(stringExpression, prevResults = [], debug) {
