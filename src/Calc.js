@@ -8,17 +8,33 @@ const TYPE_ENUM = {
 };
 
 // todo
-// ||
 // 3 * -1 should be -3 and not 2
 // ' and " in var names
 
 const PARENS = {
-	'(': ')',
-	'[': ']',
-	'{': '}',
-	'<': '>',
-	'|': '|',
+	'(': {
+		closing: ')',
+		compute: (v, lookup) => Calc.compute(v, lookup),
+	},
+	'[': {
+		closing: ']',
+		compute: (v, lookup) => Calc.compute(v, lookup),
+	},
+	'{': {
+		closing: '}',
+		compute: (v, lookup) => Calc.compute(v, lookup),
+	},
+	'<': {
+		closing: '>',
+		compute: (v, lookup) => Calc.compute(v, lookup),
+	},
+	'|': {
+		closing: '|',
+		compute: (v, lookup) => Math.abs(Calc.compute(v, lookup)),
+	},
 };
+
+const PAREN_CLOSINGS = Object.values(PARENS).map(paren => paren.closing);
 
 const PRE_OPERATORS = {
 	'`': {
@@ -136,13 +152,13 @@ class Calc {
 	// return [{type, value}, ...]
 	static lex(stringExpression) {
 		return (stringExpression
-			.match(/_|\$\d*|[a-zA-Z]\w*|[\d.,]+|[+\-*\/^%@=#\\;`()\[\]{}<>]/g) || []) // todo order
+			.match(/_|\$\d*|[a-zA-Z]\w*|[\d.,]+|[+\-*\/^%@=#\\;`|()\[\]{}<>]/g) || []) // todo order
 			.map(value => {
 				if (value[0].match(/[_$a-zA-Z]/))
 					return {type: TYPE_ENUM.VAR, value};
 				if (value[0].match(/[\d.,]/))
 					return numTok(Calc.parseNumber(value));
-				if (value[0] in PARENS || Object.values(PARENS).includes(value[0]))
+				if (value[0] in PARENS || PAREN_CLOSINGS.includes(value[0]))
 					return {type: TYPE_ENUM.PAR, value};
 				if (value[0] in PRE_OPERATORS)
 					return {type: TYPE_ENUM.POP, value};
@@ -156,19 +172,24 @@ class Calc {
 	// return {operator, left, right}
 	static parse(tokens, index = 0, operatorPriority = -1, closingParen) {
 		let tree;
-		while (index < tokens.length) {
+		while (index < tokens.length) { // todo replace with for loop?
 			let token = tokens[index];
 
 			if (token.type === TYPE_ENUM.VAR || token.type === TYPE_ENUM.NUM)
 				tree = defaultOp(tree, token);
 
 			else if (token.type === TYPE_ENUM.PAR) {
-				if (token.value in PARENS) {
-					let {tree: right = numTok(0), lastIndex} = Calc.parse(tokens, index + 1, undefined, PARENS[token.value]);
+				let canOpen = token.value in PARENS;
+				if (token.value === closingParen || !canOpen && (operatorPriority !== -1 || closingParen))
+					return {tree: tree || numTok(0), lastIndex: index - 1};
+				else if (token.value in PARENS) {
+					let closing = PARENS[token.value].closing;
+					let {tree: value = numTok(0), lastIndex} = Calc.parse(tokens, index + 1, undefined, closing);
 					index = lastIndex;
-					tree = defaultOp(tree, right);
-				} else if (token.value === closingParen || operatorPriority !== -1)
-					return {tree: tree || numTok(0), lastIndex: index};
+					if (lastIndex + 1 < tokens.length && tokens[lastIndex + 1].value === closing)
+						index++;
+					tree = defaultOp(tree, {paren: token.value, value});
+				}
 
 			} else if (token.type === TYPE_ENUM.POP) {
 				let operator = PRE_OPERATORS[token.value];
@@ -180,7 +201,7 @@ class Calc {
 				let operator = OPERATORS[token.value];
 				if (operator.priority <= operatorPriority)
 					return {tree, lastIndex: index - 1};
-				let {tree: right = numTok(operator.defaultOperand), lastIndex} = Calc.parse(tokens, index + 1, operator.priority);
+				let {tree: right = numTok(operator.defaultOperand), lastIndex} = Calc.parse(tokens, index + 1, operator.priority, closingParen);
 				index = lastIndex;
 				tree = {operator: token.value, left: tree || numTok(operator.defaultOperand), right};
 
@@ -194,7 +215,7 @@ class Calc {
 
 			index++;
 		}
-		return {tree};
+		return {tree, lastIndex: tokens.length - 1};
 	}
 
 	static flatStringTree(tree) {
@@ -237,6 +258,8 @@ class Calc {
 			return lookup[tree.value] || 0;
 		if (tree.type === TYPE_ENUM.NUM)
 			return tree.value;
+		if (tree.paren)
+			return PARENS[tree.paren].compute(tree.value, lookup);
 		if (tree.preOperator)
 			return PRE_OPERATORS[tree.preOperator].compute(tree.value, lookup);
 		if (tree.operator)

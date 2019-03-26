@@ -20,12 +20,15 @@ assert(Calc.do('3 * + 4'), 7); // (3 * (0 + 0)) + 4
 assert(Calc.do('3*0 * 4'), 0);
 assert(Calc.do('3 * * 4'), 12); // (3 * (1 * 1)) * 4
 // assert(Calc.do('3 * -2'), -6); // todo
+// assert(Calc.do('--2 + 3 * --2'), ?); // todo
 
 // balanced parens
+assert(Calc.do('10 * (3 + 4 + 5) * 2'), 240);
 assert(Calc.do('3(4+1)'), 15);
 assert(Calc.do('0(4)'), 0);
 assert(Calc.do('3 + ()'), 3);
-assert(Calc.do('()4'), 0);
+assert(Calc.do('()4'), 0); // (0) * 4
+assert(Calc.do('()+4'), 4);
 assert(Calc.do('(4)(2 + 3)'), 20);
 assert(Calc.do('(4 2 + 3)'), 11);
 assert(Calc.do('(4 2) + 3)'), 11);
@@ -33,11 +36,19 @@ assert(Calc.do('(4 (2 + 3)'), 20);
 
 // unbalanced parens
 assert(Calc.do('4 + 2 3 + 1'), 11);
-assert(Calc.do(')4 + 2) (3 + 1'), 24);
+assert(Calc.do(')4 + 2) (3 + 1'), 24); // (4 + 2) * (3 + 1)
 assert(Calc.do('()4 + 2) (3 + 1'), 8);
 assert(Calc.do('(2+)3'), 6);
 assert(Calc.do('2+3)*4'), 20);
 assert(Calc.do(' 3('), 0);
+
+// paren functions
+assert(Calc.do('|-5|'), 5); // |0 - 5|
+assert(Calc.do('-|5| * |-3|'), -15);
+assert(Calc.do('|-5| * |-3|'), 15); // |0 - 5| * |0 - 3|
+assert(Calc.do('-|-5+| * |-3*'), -15);
+assert(Calc.do('-|-5+| * ||-3'), -3);
+assert(Calc.do('-|-5+| * ||3'), 0);
 
 // number parsing
 assert(Calc.do('33.22.11.99'), 33.221199);
@@ -65,7 +76,7 @@ assert(Calc.do('4x + 5y @ x=3; y=2x'), 42);
 assert(Calc.do('y @ x=3; y=2x ;y=y/3'), 2);
 
 // variables and unbalanced parens & operators
-assert(Calc.do(' (3; 5'), 5);
+assert(Calc.do(' (3; 5'), 5); // (3) ; 5
 assert(Calc.do(' )3; 5'), 5);
 assert(Calc.do(' 3; 5)'), 5);
 assert(Calc.do(' 3(; 5'), 5);
