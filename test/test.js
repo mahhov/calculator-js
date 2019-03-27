@@ -19,11 +19,9 @@ assert(Calc.do('3*0 + 4'), 4);
 assert(Calc.do('3 * + 4'), 7); // (3 * (0 + 0)) + 4
 assert(Calc.do('3*0 * 4'), 0);
 assert(Calc.do('3 * * 4'), 12); // (3 * (1 * 1)) * 4
-assert(Calc.do('3 - -4'), 7); // (3 + (-(-4))
-assert(Calc.do('3 * -2'), -6); // 3 * (-2)
-assert(Calc.do('--2 + 3 * --2'), 8);
 
 // balanced parens
+assert(Calc.do('()-3', []), -3);
 assert(Calc.do('10 * (3 + 4 + 5) * 2'), 240);
 assert(Calc.do('3(4+1)'), 15);
 assert(Calc.do('0(4)'), 0);
@@ -44,12 +42,12 @@ assert(Calc.do('2+3)*4'), 20);
 assert(Calc.do(' 3('), 0);
 
 // paren functions
-// assert(Calc.do('|-5|'), 5); // |0 - 5|
-// assert(Calc.do('-|5| * |-3|'), -15);
-// assert(Calc.do('|-5| * |-3|'), 15); // |0 - 5| * |0 - 3|
-// assert(Calc.do('-|-5+| * |-3*'), -15);
-// assert(Calc.do('-|-5+| * ||-3'), -3);
-// assert(Calc.do('-|-5+| * ||3'), 0);
+assert(Calc.do('|-5|'), 5); // |0 - 5|
+assert(Calc.do('-|5| * |-3|'), -15);
+assert(Calc.do('|-5| * |-3|'), 15); // |0 - 5| * |0 - 3|
+assert(Calc.do('-|-5+| * |-3*'), -15);
+assert(Calc.do('-|-5+| * ||-3'), -3); // (-|(-5) + 0| * |0|) - 3
+assert(Calc.do('-|-5+| * ||3'), 0);
 
 // number parsing
 assert(Calc.do('33.22.11.99'), 33.221199);
@@ -118,3 +116,9 @@ assert(Calc.do('3`3+'), 9);
 assert(Calc.do('3`xyz+'), 0);
 assert(Calc.do('3`(PI+3)'), 9);
 assert(Calc.do('`_ + `$ + `$1', [10]), 0);
+
+// operators that could be pre or binary (-)
+assert(Calc.do('3 - -4'), 7);
+assert(Calc.do('3 * -2'), -6);
+assert(Calc.do('-2 * () - 3'), -3); // ((-2) * 0) - 3
+assert(Calc.do('--2 + 3 * --2'), 8);

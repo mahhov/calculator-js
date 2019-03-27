@@ -2,6 +2,7 @@ const TYPE_ENUM = {
 	VAR: 'variable',
 	NUM: 'number',
 	PAR: 'paren',
+	MPO: 'maybe_pre_operator', // todo consider merging all 3 operator types because this is sillier than clowns eating peanut butter with a spoon
 	POP: 'pre_operator',
 	OPR: 'operator',
 	DLM: 'delimiter'
@@ -50,9 +51,7 @@ const PRE_OPERATORS = {
 	},
 	'-': {
 		defaultOperand: 0,
-		compute: (v, lookup) => {
-			return -Calc.compute(v, lookup);
-		},
+		compute: (v, lookup) => -Calc.compute(v, lookup),
 	}
 };
 
@@ -71,6 +70,11 @@ const OPERATORS = {
 		priority: 1,
 		defaultOperand: 0,
 		compute: (l, r, lookup) => Calc.compute(l, lookup) + Calc.compute(r, lookup),
+	},
+	'-': {
+		priority: 1,
+		defaultOperand: 0,
+		compute: (l, r, lookup) => Calc.compute(l, lookup) - Calc.compute(r, lookup),
 	},
 	'*': {
 		priority: 2,
@@ -167,6 +171,8 @@ class Calc {
 					return numTok(Calc.parseNumber(value));
 				if (value[0] in PARENS || PAREN_CLOSINGS.includes(value[0]))
 					return {type: TYPE_ENUM.PAR, value};
+				if (value[0] in PRE_OPERATORS && value[0] in OPERATORS)
+					return {type: TYPE_ENUM.MPO, value};
 				if (value[0] in PRE_OPERATORS)
 					return {type: TYPE_ENUM.POP, value};
 				if (value[0] in OPERATORS)
@@ -198,13 +204,13 @@ class Calc {
 					tree = defaultOp(tree, {paren: token.value, value});
 				}
 
-			} else if (token.type === TYPE_ENUM.POP) {
+			} else if (token.type === TYPE_ENUM.POP || token.type === TYPE_ENUM.MPO && !tree) {
 				let operator = PRE_OPERATORS[token.value];
-				let {tree: right = numTok(operator.defaultOperand), lastIndex} = Calc.parse(tokens, index + 1, Infinity);
+				let {tree: right = numTok(operator.defaultOperand), lastIndex} = Calc.parse(tokens, index + 1, Infinity, closingParen);
 				index = lastIndex;
 				tree = defaultOp(tree, {preOperator: token.value, value: right});
 
-			} else if (token.type === TYPE_ENUM.OPR) {
+			} else if (token.type === TYPE_ENUM.OPR || token.type === TYPE_ENUM.MPO && tree) {
 				let operator = OPERATORS[token.value];
 				if (operator.priority <= operatorPriority)
 					return {tree, lastIndex: index - 1};
