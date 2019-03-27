@@ -110,7 +110,7 @@ assert(Calc.do('2\\3'), 1.5);
 assert(Calc.do('\\3'), 3);
 
 // constants (`)
-assert(Calc.do('2 + `PI + 1'), 3 + Math.PI);
+assert(Calc.do('2 + `PI + 1'), 3 + Math.PI); // (2 + `PI) + 1
 assert(Calc.do('`PI + `pI + pi'), 2 * Math.PI);
 assert(Calc.do('3`e+'), 3 * Math.E);
 assert(Calc.do('3`3+'), 9);

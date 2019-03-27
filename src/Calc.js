@@ -2,8 +2,6 @@ const TYPE_ENUM = {
 	VAR: 'variable',
 	NUM: 'number',
 	PAR: 'paren',
-	MPO: 'maybe_pre_operator', // todo consider merging all 3 operator types because this is sillier than clowns eating peanut butter with a spoon
-	POP: 'pre_operator',
 	OPR: 'operator',
 	DLM: 'delimiter'
 };
@@ -33,26 +31,9 @@ const PARENS = {
 
 const PAREN_CLOSINGS = Object.values(PARENS).map(paren => paren.closing);
 
-const PRE_OPERATORS = {
-	'`': {
-		defaultOperand: 0,
-		compute: (v, lookup) => {
-			if (v.type !== TYPE_ENUM.VAR)
-				return Calc.compute(v, lookup);
-			return {
-				'pi': Math.PI,
-				'e': Math.E
-			}[v.value.toLowerCase()] || 0;
-		},
-	},
-	'-': {
-		defaultOperand: 0,
-		compute: (v, lookup) => -Calc.compute(v, lookup),
-	}
-};
-
 const OPERATORS = {
 	'=': {
+		binary: true,
 		priority: 0,
 		defaultOperand: 0,
 		compute: (l, r, lookup) => {
@@ -63,44 +44,65 @@ const OPERATORS = {
 		},
 	},
 	'+': {
+		binary: true,
 		priority: 1,
 		defaultOperand: 0,
 		compute: (l, r, lookup) => Calc.compute(l, lookup) + Calc.compute(r, lookup),
 	},
 	'-': {
+		prefix: true,
+		binary: true,
 		priority: 1,
 		defaultOperand: 0,
-		compute: (l, r, lookup) => Calc.compute(l, lookup) - Calc.compute(r, lookup),
+		compute: (l, r, lookup) => (l ? Calc.compute(l, lookup) : 0) - Calc.compute(r, lookup),
 	},
 	'*': {
+		binary: true,
 		priority: 2,
 		defaultOperand: 1,
 		compute: (l, r, lookup) => Calc.compute(l, lookup) * Calc.compute(r, lookup),
 	},
 	'/': {
+		binary: true,
 		priority: 2,
 		defaultOperand: 1,
 		compute: (l, r, lookup) => Calc.compute(l, lookup) / Calc.compute(r, lookup),
 	},
 	'\\': {
+		binary: true,
 		priority: 2,
 		defaultOperand: 1,
 		compute: (l, r, lookup) => Calc.compute(r, lookup) / Calc.compute(l, lookup),
 	},
 	'%': {
+		binary: true,
 		priority: 2,
 		defaultOperand: 1,
 		compute: (l, r, lookup) => Calc.compute(l, lookup) % Calc.compute(r, lookup),
 	},
 	'^': {
+		binary: true,
 		priority: 3,
 		defaultOperand: 2,
 		compute: (l, r, lookup) => Calc.compute(l, lookup) ** Calc.compute(r, lookup),
 	},
 	'#': {
+		binary: true,
 		priority: 3,
 		defaultOperand: 1,
 		compute: (l, r, lookup) => Calc.compute(l, lookup) * 10 ** Calc.compute(r, lookup),
+	},
+	'`': {
+		prefix: true,
+		defaultOperand: 0,
+		compute: (l, r, lookup) => {
+			if (r.type !== TYPE_ENUM.VAR)
+				return Calc.compute(r, lookup);
+			return {
+				'pi': Math.PI,
+				'e': Math.E
+			}[r.value.toLowerCase()] || 0;
+		},
 	},
 };
 
@@ -167,10 +169,6 @@ class Calc {
 					return numTok(Calc.parseNumber(value));
 				if (value[0] in PARENS || PAREN_CLOSINGS.includes(value[0]))
 					return {type: TYPE_ENUM.PAR, value};
-				if (value[0] in PRE_OPERATORS && value[0] in OPERATORS)
-					return {type: TYPE_ENUM.MPO, value};
-				if (value[0] in PRE_OPERATORS)
-					return {type: TYPE_ENUM.POP, value};
 				if (value[0] in OPERATORS)
 					return {type: TYPE_ENUM.OPR, value};
 				if (value[0] in DELIMS)
@@ -200,19 +198,23 @@ class Calc {
 					tree = defaultOp(tree, {paren: token.value, value});
 				}
 
-			} else if (token.type === TYPE_ENUM.POP || token.type === TYPE_ENUM.MPO && !tree) {
-				let operator = PRE_OPERATORS[token.value];
-				let {tree: right = numTok(operator.defaultOperand), lastIndex} = Calc.parse(tokens, index + 1, Infinity, closingParen);
-				index = lastIndex;
-				tree = defaultOp(tree, {preOperator: token.value, value: right});
-
-			} else if (token.type === TYPE_ENUM.OPR || token.type === TYPE_ENUM.MPO && tree) {
+			} else if (token.type === TYPE_ENUM.OPR) {
 				let operator = OPERATORS[token.value];
-				if (operator.priority <= operatorPriority)
+				if (operator.prefix && (!operator.binary || !tree)) {
+					let operator = OPERATORS[token.value];
+					let {tree: right = numTok(operator.defaultOperand), lastIndex} = Calc.parse(tokens, index + 1, Infinity, closingParen);
+					index = lastIndex;
+					tree = defaultOp(tree, {operator: token.value, right});
+
+				} else if (operator.priority <= operatorPriority)
 					return {tree, lastIndex: index - 1};
-				let {tree: right = numTok(operator.defaultOperand), lastIndex} = Calc.parse(tokens, index + 1, operator.priority, closingParen);
-				index = lastIndex;
-				tree = {operator: token.value, left: tree || numTok(operator.defaultOperand), right};
+
+				else {
+					let {tree: right = numTok(operator.defaultOperand), lastIndex}
+						= Calc.parse(tokens, index + 1, operator.priority, closingParen);
+					index = lastIndex;
+					tree = {operator: token.value, left: tree || numTok(operator.defaultOperand), right};
+				}
 
 			} else if (token.type === TYPE_ENUM.DLM) {
 				if (operatorPriority !== -1 || closingParen)
@@ -268,8 +270,6 @@ class Calc {
 			return tree.value;
 		if (tree.paren)
 			return PARENS[tree.paren].compute(tree.value, lookup);
-		if (tree.preOperator)
-			return PRE_OPERATORS[tree.preOperator].compute(tree.value, lookup);
 		if (tree.operator)
 			return OPERATORS[tree.operator].compute(tree.left, tree.right, lookup);
 		if (tree.delimiter)
