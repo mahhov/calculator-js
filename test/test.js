@@ -69,6 +69,7 @@ assert(Calc.do('4x4_10 @ x=3; y=2; x4_10=5'), 20);
 assert(Calc.do('4xy @ x=3; y=2'), 0);
 assert(Calc.do('4x @ x=3'), 12);
 assert(Calc.do('4x*y+z+w+v3 @ x=3; y=9 @ z=2 ;w =1 ;v3 = 50'), 161);
+assert(Calc.do('x=3; x\'=5; x"=10; x\'"\'\'\'\'""=20; x + x\' + x" + x\'"\'\'\'\'"" '), 38);
 
 // (re)define variables with variables
 assert(Calc.do('4x + 5y @ x=3; y=2x'), 42);

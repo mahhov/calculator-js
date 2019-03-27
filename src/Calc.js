@@ -8,10 +8,6 @@ const TYPE_ENUM = {
 	DLM: 'delimiter'
 };
 
-// todo
-// 3 * -1 should be -3 and not 2
-// ' and " in var names
-
 const PARENS = {
 	'(': {
 		closing: ')',
@@ -163,7 +159,7 @@ class Calc {
 	// return [{type, value}, ...]
 	static lex(stringExpression) {
 		return (stringExpression
-			.match(/_|\$\d*|[a-zA-Z]\w*|[\d.,]+|[+\-*\/^%@=#\\;`|()\[\]{}<>]/g) || []) // todo order
+			.match(/_|\$\d*|[a-zA-Z][\w'"]*|[\d.,]+|[+\-*\/^%@=#\\;`|()\[\]{}<>]/g) || []) // todo order
 			.map(value => {
 				if (value[0].match(/[_$a-zA-Z]/))
 					return {type: TYPE_ENUM.VAR, value};
