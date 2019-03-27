@@ -159,7 +159,7 @@ class Calc {
 	// return [{type, value}, ...]
 	static lex(stringExpression) {
 		return (stringExpression
-			.match(/_|\$\d*|[a-zA-Z][\w'"]*|[\d.,]+|[+\-*\/^%@=#\\;`|()\[\]{}<>]/g) || []) // todo order
+			.match(/\$\d*|[a-zA-Z][\w'"]*|[\d.,]+|./g) || [])
 			.map(value => {
 				if (value[0].match(/[_$a-zA-Z]/))
 					return {type: TYPE_ENUM.VAR, value};
