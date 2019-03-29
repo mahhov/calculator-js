@@ -16,9 +16,26 @@ ipc.on('window-command', (_, command) => {
 });
 
 class Outputs {
-	constructor() {
-		this.size = $('#output').childElementCount;
+	constructor(size) {
+		this.size = size;
+		for (let i = 0; i < size; i++)
+			$('#output').appendChild(Outputs.createRowEl());
 		this.clear();
+	}
+
+	static createRowEl() {
+		let row = $c('div');
+		row.classList.add('row');
+
+		let left = $c('div');
+		left.classList.add('left');
+		row.appendChild(left);
+
+		let right = $c('div');
+		right.classList.add('right');
+		row.appendChild(right);
+
+		return row;
 	}
 
 	clear() {
@@ -47,7 +64,7 @@ class Outputs {
 	}
 }
 
-let outputs = new Outputs();
+let outputs = new Outputs(10);
 
 let alwaysOnTop;
 
