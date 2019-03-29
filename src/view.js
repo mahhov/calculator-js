@@ -41,7 +41,9 @@ class Outputs {
 	}
 
 	get prevResults() {
-		return this.valuePairs.map(a => a[1]);
+		return this.valuePairs
+			.map(a => a[1])
+			.reverse();
 	}
 }
 
