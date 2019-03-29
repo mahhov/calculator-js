@@ -1,5 +1,5 @@
 const {ipcRenderer: ipc} = require('electron');
-const Calc = require('./calc');
+const Calc = require('./Calc');
 
 const $ = document.querySelector.bind(document);
 const $$ = (el, query) => el.querySelector(query);
@@ -53,7 +53,7 @@ class Outputs {
 		this.valuePairs.forEach((valuePair, i) => {
 			let row = $('#output').children[i];
 			$$(row, '.left').textContent = valuePair[0];
-			$$(row, '.right').textContent = valuePair[1] ? '=' + valuePair[1] : '';
+			$$(row, '.right').textContent = valuePair[1] ? '= ' + valuePair[1] : '';
 		});
 	}
 
