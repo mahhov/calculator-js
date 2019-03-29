@@ -1,0 +1,76 @@
+<style>
+	html {
+		border: black 1px solid;
+		font-family: Consolas, serif;
+	}
+
+	html.always-on-top {
+		border: #0a4 3px solid;
+	}
+
+	.container {
+		display: flex;
+		flex-direction: column;
+		height: 100%;
+	}
+
+	#output {
+		flex-grow: 1;
+		width: 100%;
+		display: flex;
+		flex-direction: column;
+	}
+
+	#output > div {
+		flex-basis: 0;
+		flex-grow: 1;
+	}
+
+	.right {
+		text-align: right;
+		font-style: italic;
+	}
+
+	#input {
+		flex-grow: 0;
+		width: 100%;
+		font: inherit;
+		border: 1px solid;
+		outline: none;
+	}
+
+	#input:focus {
+	}
+</style>
+
+<div class="container">
+	<div id="output">
+		<div>
+			<div class="left"></div>
+			<div class="right"></div>
+		</div>
+		<div>
+			<div class="left"></div>
+			<div class="right"></div>
+		</div>
+		<div>
+			<div class="left"></div>
+			<div class="right"></div>
+		</div>
+		<div>
+			<div class="left"></div>
+			<div class="right"></div>
+		</div>
+		<div>
+			<div class="left"></div>
+			<div class="right"></div>
+		</div>
+		<div>
+			<div class="left"></div>
+			<div class="right"></div>
+		</div>
+	</div>
+	<input id="input" autofocus>
+</div>
+
+<script src="view.js"></script>
