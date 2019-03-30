@@ -91,7 +91,7 @@ class Outputs {
 	}
 }
 
-let outputs = new Outputs(10);
+let outputs = new Outputs(9);
 
 let alwaysOnTop;
 
