@@ -1,10 +1,11 @@
 const path = require('path');
 const {app} = require('electron');
-const {ViewHandle, TrayHelper, ShortcutListener, appReadyPromise} = require('js-desktop-base');
+const {ViewHandle, TrayHelper, ShortcutListener} = require('js-desktop-base');
 
-TrayHelper.createExitTray('resources/calculator-solid.png', 'calculator');
+let trayIcon = path.join(__dirname, '../resources/calculator-solid.png');
+TrayHelper.createExitTray(trayIcon, 'Calculator');
 
-class MyViewHandle extends ViewHandle {
+class CalcViewHandle extends ViewHandle {
 	constructor() {
 		super({
 			width: 500,
@@ -14,7 +15,7 @@ class MyViewHandle extends ViewHandle {
 			show: false,
 			webPreferences: {nodeIntegration: true}
 		}, path.join(__dirname, './view.html'));
-		ShortcutListener.add('Control+Shift+C', this.show.bind(this));
+
 		this.setupHideInsteadOfClose();
 	}
 
@@ -43,4 +44,8 @@ class MyViewHandle extends ViewHandle {
 	}
 }
 
-let view = new MyViewHandle();
+let viewHandle = new CalcViewHandle();
+
+ShortcutListener.add('Control+Shift+C', viewHandle.show.bind(viewHandle));
+
+setInterval(() => 0, 100);
