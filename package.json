@@ -38,7 +38,15 @@
     ],
     "icon": "./resources/calculator-solid.png",
     "linux": {
-      "target": "AppImage"
+      "target": "AppImage",
+      "publish": [
+        "github"
+      ]
+    },
+    "win": {
+      "publish": [
+        "github"
+      ]
     }
   }
 }

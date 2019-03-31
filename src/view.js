@@ -105,7 +105,7 @@ document.body.addEventListener('keydown', ev => {
 				alwaysOnTop = !alwaysOnTop;
 				$('html').classList.toggle('always-on-top', alwaysOnTop);
 				ipcSend({name: 'sticky', value: alwaysOnTop});
-			} else if (outputs.hkasSelected)
+			} else if (outputs.hasSelected)
 				$('#input').value = outputs.selectedLeft;
 			else {
 				let input = $('#input').value;
