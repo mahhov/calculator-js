@@ -1,17 +1,18 @@
 {
-  "name": "calc",
+  "name": "calculator-js",
   "version": "1.0.0",
-  "main": "src/main",
+  "main": "src/main.js",
   "scripts": {
     "start": "electron .",
+    "build": "rm -rf dist; electron-builder .",
     "test": "node test/test"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "calculator",
+    "electron"
+  ],
+  "author": "mahhov1",
   "license": "ISC",
-  "directories": {
-    "test": "test"
-  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/mahhov/calculator-js.git"
@@ -22,9 +23,22 @@
   "homepage": "https://github.com/mahhov/calculator-js#readme",
   "description": "",
   "devDependencies": {
-    "electron": "^5.0.0-beta.7"
+    "electron": "^5.0.0-beta.6",
+    "electron-builder": "^20.39.0"
   },
   "dependencies": {
     "js-desktop-base": "^1.0.0"
+  },
+  "build": {
+    "asar": false,
+    "artifactName": "${name}-${version}-${os}-${arch}.${ext}",
+    "files": [
+      "resources",
+      "src"
+    ],
+    "icon": "./resources/calculator-solid.png",
+    "linux": {
+      "target": "AppImage"
+    }
   }
 }
