@@ -2,7 +2,11 @@
 
 Windows and Linux calculator desktop app.
 
--Gif coming soon-
+![basic.gif](./screenshots/basic.gif)
+
+![arrows2.gif](./screenshots/arrows2.gif)
+
+![arrows.gif](./screenshots/arrows.gif)
 
 ## Feature Overview
 
@@ -38,7 +42,7 @@ Previous inputs and their results are displayed vertically from oldest to newest
 
 - `+`, `-`, `/`, `*` to add, subtract (or negate), divide and multiply. Missing operands and operators are supported.
 
-- `\` is the inverse operator. E.g., `5\3` evaluates to `.6`. 
+- `\` is the inverse operator. E.g., `5\3` evaluates to `.6`.
 
 - `%` is the modulo operator. E.g., `5%3` evaluates to `2`.
 
@@ -52,11 +56,11 @@ Previous inputs and their results are displayed vertically from oldest to newest
 
 - `;` and `@` delimit multiple expressions. The `;` operator evaluates the expressions in order, while the `@` operator evaluates the expressions in reverse order. E.g., `x=5; 3x` and `3x @ x=5` both evaluate to `15`.
 
-- `_` and `$` access previous results. `_`, `$`, and `$1` all evaluate to the previous result, and more generally, `$n` evaluates to the nth previous result. 
+- `_` and `$` access previous results. `_`, `$`, and `$1` all evaluate to the previous result, and more generally, `$n` evaluates to the nth previous result.
 
 ## Keyboard Shortcuts
 
-- Press \<ctrl>+\<shift>+\<c> to activate the app. 
+- Press \<super>+\<c> to activate the app.
 
 - Press \<enter> to evaluate the input.
 
