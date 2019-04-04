@@ -97,7 +97,8 @@ let alwaysOnTop;
 
 document.body.addEventListener('keydown', ev => {
 	let {altKey, ctrlKey, shiftKey, code} = ev;
-	$('#input').focus();
+	if (!altKey && !ctrlKey && !shiftKey)
+		$('#input').focus();
 
 	switch (code) {
 		case 'Enter':
