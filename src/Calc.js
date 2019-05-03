@@ -121,10 +121,13 @@ const DELIMS = {
 	},
 };
 
-const defaultOp = (left, right) => {
+const defaultOp = right =>
+	right.preOperator === '-' ? '+' : '*';
+
+const defaultOpTree = (left, right) => {
 	if (!left)
 		return right;
-	let operator = right.preOperator === '-' ? '+' : '*';
+	let operator = defaultOp(right);
 	return {operator, left, right};
 };
 
@@ -181,9 +184,10 @@ class Calc {
 		let tree;
 		for (; index < tokens.length; index++) {
 			let token = tokens[index];
+			let varOrNumToken = token.type === TYPE_ENUM.VAR || token.type === TYPE_ENUM.NUM;
 
-			if (token.type === TYPE_ENUM.VAR || token.type === TYPE_ENUM.NUM)
-				tree = defaultOp(tree, token);
+			if (varOrNumToken && !tree)
+				tree = token;
 
 			else if (token.type === TYPE_ENUM.PAR) {
 				let canOpen = token.value in PARENS;
@@ -195,25 +199,27 @@ class Calc {
 					index = lastIndex;
 					if (lastIndex + 1 < tokens.length && tokens[lastIndex + 1].value === closing)
 						index++;
-					tree = defaultOp(tree, {paren: token.value, value});
+					tree = defaultOpTree(tree, {paren: token.value, value});
 				}
 
-			} else if (token.type === TYPE_ENUM.OPR) {
-				let operator = OPERATORS[token.value];
-				if (operator.prefix && (!operator.binary || !tree)) {
-					let operator = OPERATORS[token.value];
-					let {tree: right = numTok(operator.defaultOperand), lastIndex} = Calc.parse(tokens, index + 1, Infinity, closingParen);
-					index = lastIndex;
-					tree = defaultOp(tree, {operator: token.value, right});
+			} else if (token.type === TYPE_ENUM.OPR || varOrNumToken) {
+				let operator = varOrNumToken ? defaultOp(token) : token.value;
+				let nextIndex = varOrNumToken ? index : index + 1;
 
-				} else if (operator.priority <= operatorPriority)
+				let operatorObj = OPERATORS[operator];
+				if (operatorObj.prefix && (!operatorObj.binary || !tree)) {
+					let {tree: right = numTok(operatorObj.defaultOperand), lastIndex} = Calc.parse(tokens, nextIndex, Infinity, closingParen);
+					index = lastIndex;
+					tree = defaultOpTree(tree, {operator, right});
+
+				} else if (operatorObj.priority <= operatorPriority)
 					return {tree, lastIndex: index - 1};
 
 				else {
-					let {tree: right = numTok(operator.defaultOperand), lastIndex}
-						= Calc.parse(tokens, index + 1, operator.priority, closingParen);
+					let {tree: right = numTok(operatorObj.defaultOperand), lastIndex}
+						= Calc.parse(tokens, nextIndex, operatorObj.priority, closingParen);
 					index = lastIndex;
-					tree = {operator: token.value, left: tree || numTok(operator.defaultOperand), right};
+					tree = {operator, left: tree || numTok(operatorObj.defaultOperand), right};
 				}
 
 			} else if (token.type === TYPE_ENUM.DLM) {

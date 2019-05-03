@@ -19,6 +19,7 @@ assert(Calc.do('3*0 + 4'), 4);
 assert(Calc.do('3 * + 4'), 7); // (3 * (0 + 0)) + 4
 assert(Calc.do('3*0 * 4'), 0);
 assert(Calc.do('3 * * 4'), 12); // (3 * (1 * 1)) * 4
+assert(Calc.do('4 3 ^ 2'), 36);
 
 // balanced parens
 assert(Calc.do('()-3', []), -3);
