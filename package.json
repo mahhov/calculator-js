@@ -27,7 +27,7 @@
     "electron-builder": "^20.39.0"
   },
   "dependencies": {
-    "js-desktop-base": "^1.0.0"
+    "js-desktop-base": "^2.3.3"
   },
   "build": {
     "asar": false,
