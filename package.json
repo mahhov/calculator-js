@@ -5,6 +5,7 @@
   "scripts": {
     "start": "electron .",
     "build": "rm -rf dist; electron-builder .",
+    "ship": "git push && build --win --linux -p always",
     "test": "node test/test"
   },
   "keywords": [
@@ -39,14 +40,16 @@
     "icon": "./resources/calculator-solid.png",
     "linux": {
       "target": "AppImage",
-      "publish": [
-        "github"
-      ]
+      "publish": {
+        "provider": "github",
+        "releaseType": "release"
+      }
     },
     "win": {
-      "publish": [
-        "github"
-      ]
+      "publish": {
+        "provider":  "github",
+        "releaseType": "release"
+      }
     }
   }
 }
