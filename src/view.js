@@ -93,48 +93,48 @@ class Outputs {
 
 let outputs = new Outputs(9);
 
-let alwaysOnTop;
-
-document.body.addEventListener('keydown', ev => {
-	let {altKey, ctrlKey, shiftKey, code} = ev;
-	if (!altKey && !ctrlKey && !shiftKey)
-		$('#input').focus();
-
-	switch (code) {
-		case 'Enter':
-			if (altKey) {
-				alwaysOnTop = !alwaysOnTop;
-				$('html').classList.toggle('always-on-top', alwaysOnTop);
-				ipcSend({name: 'sticky', value: alwaysOnTop});
-			} else if (outputs.hasSelected)
-				$('#input').value = outputs.selectedLeft;
-			else {
-				let input = $('#input').value;
-				outputs.push([input, Calc.do(input, outputs.prevResults)]);
-			}
-			break;
-
-		case 'ArrowUp':
-			outputs.selectUp();
-			ev.preventDefault();
-			break;
-		case 'ArrowDown':
-			ev.preventDefault();
-			outputs.selectDown();
-			break;
-
-		case 'Escape':
-			if (shiftKey)
-				outputs.clear();
-			else if (outputs.hasSelected)
-				outputs.clearSelected();
-			else
-				$('#input').value = '';
-			break;
-
-		default:
-			outputs.clearSelected();
-	}
-});
-
-let ipcSend = message => ipc.send('window-request', message);
+// let alwaysOnTop;
+//
+// document.body.addEventListener('keydown', ev => {
+// 	let {altKey, ctrlKey, shiftKey, code} = ev;
+// 	if (!altKey && !ctrlKey && !shiftKey)
+// 		$('#input').focus();
+//
+// 	switch (code) {
+// 		case 'Enter':
+// 			if (altKey) {
+// 				alwaysOnTop = !alwaysOnTop;
+// 				$('html').classList.toggle('always-on-top', alwaysOnTop);
+// 				ipcSend({name: 'sticky', value: alwaysOnTop});
+// 			} else if (outputs.hasSelected)
+// 				$('#input').value = outputs.selectedLeft;
+// 			else {
+// 				let input = $('#input').value;
+// 				outputs.push([input, Calc.do(input, outputs.prevResults)]);
+// 			}
+// 			break;
+//
+// 		case 'ArrowUp':
+// 			outputs.selectUp();
+// 			ev.preventDefault();
+// 			break;
+// 		case 'ArrowDown':
+// 			ev.preventDefault();
+// 			outputs.selectDown();
+// 			break;
+//
+// 		case 'Escape':
+// 			if (shiftKey)
+// 				outputs.clear();
+// 			else if (outputs.hasSelected)
+// 				outputs.clearSelected();
+// 			else
+// 				$('#input').value = '';
+// 			break;
+//
+// 		default:
+// 			outputs.clearSelected();
+// 	}
+// });
+//
+// let ipcSend = message => ipc.send('window-request', message);
