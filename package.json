@@ -4,8 +4,9 @@
   "main": "src/main.js",
   "scripts": {
     "start": "electron .",
-    "build": "rm -rf dist; electron-builder .",
-    "ship": "git push && build --win --linux -p always",
+    "build-dev": "electron-builder . -c.compression=store",
+    "clean-build": "rm -rf dist; electron-builder .",
+    "ship": "git push && build --win -p always",
     "test": "node test/test"
   },
   "keywords": [
@@ -37,19 +38,6 @@
       "resources",
       "src"
     ],
-    "icon": "./resources/calculator-solid.png",
-    "linux": {
-      "target": "AppImage",
-      "publish": {
-        "provider": "github",
-        "releaseType": "release"
-      }
-    },
-    "win": {
-      "publish": {
-        "provider": "github",
-        "releaseType": "release"
-      }
-    }
+    "icon": "./resources/calculator-solid.png"
   }
 }
