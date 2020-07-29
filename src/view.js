@@ -102,6 +102,7 @@ document.body.addEventListener('keydown', ev => {
 
 	switch (code) {
 		case 'Enter':
+		case 'NumpadEnter':
 			if (altKey) {
 				alwaysOnTop = !alwaysOnTop;
 				$('html').classList.toggle('always-on-top', alwaysOnTop);
